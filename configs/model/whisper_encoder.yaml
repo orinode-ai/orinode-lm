@@ -1,0 +1,16 @@
+# configs/model/whisper_encoder.yaml
+# Whisper-large-v3 encoder with DoRA adapters.
+
+model_id: openai/whisper-large-v3
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/models/base/whisper-large-v3
+output_dim: 1280
+num_mel_bins: 128
+max_source_positions: 1500       # Whisper-large-v3 encoder context length
+
+dora:
+  enabled: true
+  r: 32
+  alpha: 64
+  target_modules: [q_proj, k_proj, v_proj, out_proj]
+  dropout: 0.05
+  use_dora: true                 # DoRA = LoRA + magnitude decomposition

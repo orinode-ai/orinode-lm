@@ -1,0 +1,64 @@
+# configs/training/stage1_mini.yaml
+# Mini validation run: 100 optimizer steps on 500 train + 100 dev clips.
+# Purpose: verify loss decreases, WER computed, checkpoints saved correctly.
+# Runtime: ~15-25 min on 1×RTX 4090.
+# global_step = optimizer steps (after gradient sync, every gradient_accumulation_steps batches)
+
+defaults:
+  - _base/model
+  - _base/training
+  - _base/data
+  - _self_
+
+run_name: stage1-mini-validation
+stage: 1
+description: Mini 100-step validation on truncated AfriSpeech manifests
+
+data:
+  languages: [en]
+  sampling_temperature: 1.0
+  train_manifest: ${data.manifest_dir}/afrispeech_200_train_mini.jsonl
+  dev_manifest: ${data.manifest_dir}/afrispeech_200_dev_mini.jsonl
+
+model:
+  encoder:
+    attn_implementation: sdpa
+  decoder:
+    attn_implementation: sdpa
+    freeze_base: true
+    lora:
+      enabled: false
+  adapter:
+    _disabled_: true
+
+training:
+  max_steps: 100
+  batch_size_per_gpu: 16
+  gradient_accumulation_steps: 4   # effective batch = 64
+  gradient_checkpointing: true
+  bf16: true
+  grad_clip: 1.0
+  eval_interval: 25                # evaluate WER at step 25, 50, 75, 100
+  checkpoint_interval: 50
+  logging_interval: 5
+  max_wer_batches_at_eval: 7       # 100 dev clips / batch_size 16 ≈ 7 batches
+
+optimizer:
+  type: adamw
+  lr: 1.0e-4
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+  fused: true
+
+scheduler:
+  type: cosine_with_warmup
+  warmup_steps: 20
+  min_lr_ratio: 0.1
+
+dataloader:
+  num_workers: 8
+  pin_memory: true
+  persistent_workers: true
+
+fsdp:
+  enabled: false

@@ -1,0 +1,20 @@
+# configs/data/crowdsourced_cs.yaml
+# Crowdsourced code-switching corpus.
+# Intra-sentential code-switching between English, Hausa, Yoruba, Igbo, Pidgin.
+# Each utterance has cs_spans annotating language-coherent character spans.
+# Collected via Appen/Scale AI; internal dataset.
+
+corpus_id: crowdsourced_cs
+display_name: Crowdsourced Code-Switching
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/raw/crowdsourced_cs
+processed_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/processed/crowdsourced_cs
+languages: [en, ha, yo, ig, pcm]
+is_code_switched: true
+license: proprietary-internal
+approx_hours: 200
+sample_rate: 8000              # telephony-collected; upsampled to 16 kHz
+audio_format: wav
+
+download:
+  method: manual               # place files in local_dir manually
+  requires_auth: true

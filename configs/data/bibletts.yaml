@@ -1,0 +1,19 @@
+# configs/data/bibletts.yaml
+# BibleTTS corpus configuration.
+# High-quality studio-recorded scripture readings in Hausa, Yoruba, Igbo.
+# Excellent diacritic coverage (scripture text is carefully diacritised).
+# License: CC BY-SA 4.0.  Source: https://masakhane.io/bibletts
+
+corpus_id: bibletts
+display_name: BibleTTS
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/raw/bibletts
+processed_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/processed/bibletts
+languages: [ha, yo, ig]
+license: CC BY-SA 4.0
+approx_hours: 86               # ~29 h per language
+sample_rate: 22050             # original; resampled to 16 kHz at preprocessing
+audio_format: mp3
+
+download:
+  method: openslr
+  requires_auth: false

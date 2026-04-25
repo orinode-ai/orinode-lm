@@ -1,0 +1,115 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "orinode-lm"
+version = "0.1.0"
+description = "Nigerian Speech-LLM: English / Hausa / Igbo / Yoruba / Pidgin + code-switching"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11,<3.12"
+authors = [{ name = "Orinode Research" }]
+keywords = ["speech", "llm", "asr", "nigerian", "multilingual", "hausa", "yoruba", "igbo"]
+
+dependencies = [
+    # ── Core ML ──────────────────────────────────────────────────────────────
+    "torch==2.5.1",
+    "torchaudio==2.5.1",
+    "transformers==4.46.3",
+    "accelerate==1.1.1",
+    "peft==0.13.2",
+    "datasets==3.1.0",
+    "librosa==0.10.2",
+    "resampy==0.4.3",
+    "soundfile==0.12.1",
+    "pyloudnorm==0.1.1",
+    "jiwer==3.0.5",
+    "sentencepiece==0.2.0",
+    "tiktoken==0.8.0",
+    # ── Config + infra ────────────────────────────────────────────────────────
+    "omegaconf==2.3.0",
+    "hydra-core==1.3.2",
+    "pydantic==2.9.2",
+    "python-dotenv==1.0.1",
+    # ── UI backend ────────────────────────────────────────────────────────────
+    "fastapi==0.115.5",
+    "uvicorn[standard]==0.32.1",
+    "websockets==13.1",
+    "watchdog==6.0.0",
+    "python-multipart==0.0.17",
+    "aiofiles==24.1.0",
+    # ── Telemetry (offline default) ───────────────────────────────────────────
+    "wandb==0.18.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.7.4",
+    "mypy==1.13.0",
+    "pytest==8.3.3",
+    "pytest-asyncio==0.24.0",
+    "httpx==0.27.2",
+    "pre-commit==4.0.1",
+]
+
+[project.scripts]
+orinode-ui = "orinode.ui.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/orinode"]
+
+# ── uv: CUDA 12.4 index for torch/torchaudio ─────────────────────────────────
+# For CPU-only machines remove [tool.uv.sources] and the index block below.
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv.sources]
+# CUDA 12.4 wheels on Linux/Windows; standard PyPI wheels on macOS (CPU/MPS)
+torch = [
+    { index = "pytorch-cu124", marker = "sys_platform != 'darwin'" },
+]
+torchaudio = [
+    { index = "pytorch-cu124", marker = "sys_platform != 'darwin'" },
+]
+
+# ── Ruff ──────────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+ignore = ["E501", "N806", "N812", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "S101"]
+"scripts/*" = ["T201"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ── mypy ──────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+files = ["src"]
+exclude = ["workspace/", "ui/frontend/", "scripts/"]
+
+# ── pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "slow: requires real model weights — skip with -m 'not slow'",
+]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning:torchaudio:",
+]

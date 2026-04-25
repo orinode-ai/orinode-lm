@@ -1,0 +1,20 @@
+# configs/data/afrispeech_200.yaml
+# AfriSpeech-200 corpus configuration.
+# 200 hours of Nigerian-accented English read speech from 120+ speakers.
+# Primary corpus for Stage 1 (encoder adaptation to Nigerian accent).
+# License: CC BY 4.0.  HuggingFace: intronhealth/afrispeech-200
+
+corpus_id: afrispeech_200
+display_name: AfriSpeech-200
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/raw/afrispeech_200
+processed_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/processed/afrispeech_200
+languages: [en]
+license: CC BY 4.0
+approx_hours: 200
+sample_rate: 16000
+audio_format: wav
+
+download:
+  method: huggingface
+  hf_dataset_id: intronhealth/afrispeech-200
+  requires_auth: false

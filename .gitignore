@@ -1,0 +1,58 @@
+# Runtime workspace — never committed
+workspace/
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.pyc
+
+# Frontend build artifacts
+node_modules/
+src/orinode/ui/static/
+ui/frontend/dist/
+ui/frontend/.vite/
+
+# Jupyter
+*.ipynb_checkpoints
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# uv
+.uv/
+
+# Pre-commit
+.pre-commit-run-cache/
+
+# Sample audio (origin not verified for redistribution)
+ui/frontend/public/samples/*.flac
+
+# Additional entries
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+*.log
+.coverage

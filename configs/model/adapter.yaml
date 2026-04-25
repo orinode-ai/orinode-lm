@@ -1,0 +1,15 @@
+# configs/model/adapter.yaml
+# Audio-to-LLM adapter: 2-layer MLP + Q-Former resampler.
+# Compresses Whisper's 50 tokens/sec to 5 tokens/sec before the LLM decoder.
+# This is the architectural bottleneck that makes 30-second audio tractable
+# for an LLM with a fixed context window.
+
+type: mlp_qformer
+input_dim: 1280                  # Whisper-large-v3 encoder output dim
+# output_dim set at runtime from decoder hidden_size (3584 for Gemma-2-9B)
+mlp_hidden_dim: 2048
+num_query_tokens: 64             # Q-Former learnable queries
+source_tokens_per_sec: 50        # encoder output frame rate
+target_tokens_per_sec: 5         # compressed rate (10× reduction)
+dropout: 0.1
+layer_norm_eps: 1.0e-6

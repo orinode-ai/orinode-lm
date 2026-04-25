@@ -1,0 +1,27 @@
+defaults:
+  - _self_
+
+run_id: aux_gender_v1
+
+model:
+  model_id: facebook/wav2vec2-base
+  freeze_encoder: true
+  dropout: 0.1
+
+training:
+  lr: 1e-3
+  weight_decay: 0.01
+  beta1: 0.9
+  beta2: 0.999
+  num_epochs: 20
+  grad_accum_steps: 4
+  max_grad_norm: 1.0
+  warmup_steps: 500
+  checkpoint_every_steps: 2000
+
+data:
+  manifest: workspace/data/manifests/gender_train.jsonl
+  val_manifest: workspace/data/manifests/gender_val.jsonl
+  sample_rate: 16000
+  max_duration_sec: 10.0
+  batch_size: 32

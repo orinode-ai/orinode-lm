@@ -1,0 +1,46 @@
+# configs/training/stage4_instruct.yaml
+# Stage 4: Instruction fine-tuning on call-center scenarios, translation,
+# and Q&A across all 5 Nigerian languages.
+#
+# Purpose:  Teach the model to follow natural-language instructions (e.g.
+#           "Transcribe this audio in Yoruba", "Translate to English").
+# Runtime:  ~2 d on 8×H100.  Disk: ~80 GB (LoRA adapters only).
+# Init:     model.decoder.from_checkpoint = stage-3 best checkpoint.
+
+defaults:
+  - _base/model
+  - _base/training
+  - _base/data
+  - _self_
+
+run_name: stage4-instruct
+stage: 4
+description: Instruction fine-tune — call-center, translation, Q&A
+
+data:
+  languages: [en, ha, yo, ig, pcm]
+  sampling_temperature: 0.3
+  train_manifest: ${data.manifest_dir}/stage4_train.jsonl
+  dev_manifest: ${data.manifest_dir}/stage4_dev.jsonl
+
+model:
+  encoder:
+    freeze: true
+  decoder:
+    freeze_base: false
+    lora:
+      enabled: true
+      r: 32                       # smaller rank for instruct tuning; less forgetting
+      alpha: 64
+
+training:
+  max_steps: 50000
+  batch_size_per_gpu: 2
+  gradient_accumulation_steps: 32
+
+optimizer:
+  lr: 1.0e-5
+
+scheduler:
+  warmup_steps: 500
+  min_lr_ratio: 0.01

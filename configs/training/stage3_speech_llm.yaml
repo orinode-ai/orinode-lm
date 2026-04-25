@@ -1,0 +1,46 @@
+# configs/training/stage3_speech_llm.yaml
+# Stage 3: Freeze encoder; train adapter + LoRA decoder on (audio, text) pairs
+# with causal LM objective.
+#
+# Purpose:  Bridge the audio encoder to the LLM decoder; this is the core
+#           speech-LLM training stage (analogous to LLaVA stage 2 for vision).
+# Runtime:  ~5 d on 8×H100.  Disk: ~120 GB (Gemma LoRA + adapter checkpoints).
+# Init:     model.encoder.from_checkpoint = stage-2 best.
+#           model.decoder.local_dir = downloaded Gemma-2-9B-it.
+
+defaults:
+  - _base/model
+  - _base/training
+  - _base/data
+  - _self_
+
+run_name: stage3-speech-llm
+stage: 3
+description: Adapter + LoRA decoder training — (audio, text) causal LM
+
+data:
+  languages: [en, ha, yo, ig, pcm]
+  sampling_temperature: 0.3
+  train_manifest: ${data.manifest_dir}/stage3_train.jsonl
+  dev_manifest: ${data.manifest_dir}/stage3_dev.jsonl
+
+model:
+  encoder:
+    freeze: true                  # encoder frozen in stage 3
+    from_checkpoint: null         # set to stage-2 best checkpoint path
+  decoder:
+    freeze_base: false
+    lora:
+      enabled: true
+
+training:
+  max_steps: 300000
+  batch_size_per_gpu: 2
+  gradient_accumulation_steps: 32 # effective batch ≈ 512
+
+optimizer:
+  lr: 2.0e-5
+
+scheduler:
+  warmup_steps: 2000
+  min_lr_ratio: 0.05

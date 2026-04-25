@@ -1,0 +1,24 @@
+# configs/model/decoder_llama31_8b.yaml
+# Llama-3.1-8B-Instruct decoder — alternative to Gemma-2-9B.
+# Swap in via: configs/training/stageN.yaml → model.decoder overrides.
+# Adapter input_dim stays 1280; output_dim changes to 4096.
+
+model_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/models/base/llama-3.1-8b-instruct
+hidden_size: 4096
+num_attention_heads: 32
+num_hidden_layers: 32
+vocab_size: 128256               # Llama-3 base vocab
+
+lora:
+  enabled: true
+  r: 64
+  alpha: 128
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+  dropout: 0.05
+  bias: none
+  task_type: CAUSAL_LM
+
+attn_implementation: flash_attention_2
+torch_dtype: bfloat16
+use_cache: false

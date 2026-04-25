@@ -1,0 +1,39 @@
+# configs/_base/data.yaml
+# Default data and preprocessing config inherited by training and eval configs.
+# Keeping preprocessing identical between training and eval is critical to avoid
+# silent train/eval skew (different normalisation → inflated WER numbers).
+
+data:
+  sample_rate: 16000
+  max_duration: 30.0              # seconds; longer clips are excluded at manifest load time
+  min_duration: 0.5
+  manifest_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/manifests
+  processed_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/processed
+  languages: [en, ha, yo, ig, pcm]
+  sampling_temperature: 0.3      # α for temperature-weighted multilingual mixing
+
+augmentation:
+  enabled: true
+  p_telephony: 0.5               # G.711 μ-law + 300–3400 Hz band-pass
+  p_speed: 0.3                   # 0.9× / 1.0× / 1.1× speed perturbation
+  p_noise: 0.3                   # Gaussian noise at 10–20 dB SNR
+  spec_augment:
+    enabled: true
+    freq_mask_param: 27
+    time_mask_param: 100
+    num_freq_masks: 2
+    num_time_masks: 2
+  speed:
+    rates: [0.9, 1.0, 1.1]
+  telephony:
+    quantization_channels: 256
+    low_cutoff: 300.0
+    high_cutoff: 3400.0
+  noise:
+    snr_min_db: 10.0
+    snr_max_db: 20.0
+
+preprocessing:
+  normalize_text: true
+  nfc: true
+  strip_diacritics: false         # NEVER strip during training or standard eval

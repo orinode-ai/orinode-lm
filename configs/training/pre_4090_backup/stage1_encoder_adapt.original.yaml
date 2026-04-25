@@ -1,0 +1,82 @@
+# configs/training/stage1_encoder_adapt.yaml
+# Stage 1: Fine-tune Whisper-large-v3 encoder with DoRA on AfriSpeech
+# Nigerian-accented English.
+#
+# Purpose:  Adapt the encoder to Nigerian acoustic conditions before
+#           introducing multilingual data.  Decoder is frozen.
+# Runtime:  ~10-14 days on 1×RTX 4090 (24 GB).
+# Adapted from 8×H100 config: FSDP disabled, batch sizes rebalanced,
+# Flash Attention enabled on both encoder/decoder, dataloader tuned
+# for single-GPU throughput, max_steps realistic for data size.
+# Resumes:  Set training.resume_from_checkpoint to a checkpoint dir.
+
+defaults:
+  - _base/model
+  - _base/training
+  - _base/data
+  - _self_
+
+run_name: stage1-encoder-adapt-4090
+stage: 1
+description: Whisper encoder DoRA on AfriSpeech Nigerian-accented English
+
+data:
+  languages: [en]
+  sampling_temperature: 1.0       # single language; no mixing needed
+  train_manifest: ${data.manifest_dir}/afrispeech_200_train.jsonl
+  dev_manifest: ${data.manifest_dir}/afrispeech_200_dev.jsonl
+  test_manifest: ${data.manifest_dir}/afrispeech_200_test.jsonl
+
+augmentation:
+  enabled: true
+
+model:
+  encoder:
+    attn_implementation: flash_attention_2
+  decoder:
+    attn_implementation: flash_attention_2
+    freeze_base: true
+    lora:
+      enabled: false
+  adapter:
+    _disabled_: true
+
+training:
+  max_steps: 20000
+  batch_size_per_gpu: 16
+  gradient_accumulation_steps: 4  # effective batch = 64 on 1 GPU
+  gradient_checkpointing: true
+  bf16: true
+  grad_clip: 1.0
+  eval_interval: 1000
+  checkpoint_interval: 1000
+  logging_interval: 10
+  early_stopping_patience: 10
+  early_stopping_metric: dev_wer
+  early_stopping_greater_is_better: false
+
+optimizer:
+  type: adamw
+  lr: 1.0e-4
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+  fused: true
+
+scheduler:
+  type: cosine_with_warmup
+  warmup_steps: 500
+  min_lr_ratio: 0.1
+
+dataloader:
+  num_workers: 8
+  pin_memory: true
+  persistent_workers: true
+
+fsdp:
+  enabled: false
+
+# LoRA config inherited from _base/model encoder.dora unchanged:
+#   rank: 32
+#   alpha: 64
+#   dropout: 0.05
+#   target_modules: [q_proj, k_proj, v_proj, out_proj]

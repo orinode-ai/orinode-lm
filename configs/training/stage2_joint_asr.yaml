@@ -1,0 +1,43 @@
+# configs/training/stage2_joint_asr.yaml
+# Stage 2: Joint multilingual ASR across all 5 languages + code-switching data.
+#
+# Purpose:  Teach the encoder to handle Hausa / Yoruba / Igbo / Pidgin and
+#           intra-sentential code-switching, starting from the stage-1
+#           encoder checkpoint.  Adapter is introduced; decoder LoRA is off.
+# Runtime:  ~4 d on 8×H100.  Disk: ~80 GB checkpoints.
+# Init:     Set model.encoder.from_checkpoint to stage-1 best checkpoint.
+
+defaults:
+  - _base/model
+  - _base/training
+  - _base/data
+  - _self_
+
+run_name: stage2-joint-asr
+stage: 2
+description: Multilingual ASR — EN/HA/YO/IG/PCM + code-switching
+
+data:
+  languages: [en, ha, yo, ig, pcm]
+  sampling_temperature: 0.3
+  train_manifest: ${data.manifest_dir}/stage2_train.jsonl
+  dev_manifest: ${data.manifest_dir}/stage2_dev.jsonl
+
+model:
+  encoder:
+    from_checkpoint: null         # set to stage-1 best checkpoint path
+  decoder:
+    freeze_base: true
+    lora:
+      enabled: false
+
+training:
+  max_steps: 200000
+  batch_size_per_gpu: 4
+  gradient_accumulation_steps: 16
+
+optimizer:
+  lr: 5.0e-5
+
+scheduler:
+  warmup_steps: 4000

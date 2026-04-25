@@ -1,0 +1,7 @@
+{"ts": 1700000000.0, "run_id": "stage2-20260115", "type": "train_start", "stage": 2, "config_yaml": "run_name: stage2-joint-asr", "total_steps": 200000}
+{"ts": 1700000010.0, "run_id": "stage2-20260115", "type": "step", "step": 10, "loss": 3.14, "lr": 1e-05, "grad_norm": 1.2, "epoch": 0}
+{"ts": 1700000020.0, "run_id": "stage2-20260115", "type": "step", "step": 20, "loss": 2.98, "lr": 1.5e-05, "grad_norm": 1.1, "epoch": 0}
+{"ts": 1700000100.0, "run_id": "stage2-20260115", "type": "eval", "step": 100, "wer": {"en": 0.22, "ha": 0.31, "yo": 0.35, "ig": 0.48, "pcm": 0.29}, "cs_wer": 0.52, "eval_loss": 2.87}
+{"ts": 1700000101.0, "run_id": "stage2-20260115", "type": "checkpoint_saved", "step": 100, "path": "workspace/models/checkpoints/stage2-20260115/step_100", "is_best": true}
+{"ts": 1700001000.0, "run_id": "stage2-20260115", "type": "eval", "step": 1000, "wer": {"en": 0.09, "ha": 0.14, "yo": 0.12, "ig": 0.21, "pcm": 0.18}, "cs_wer": 0.24, "eval_loss": 1.87}
+{"ts": 1700001001.0, "run_id": "stage2-20260115", "type": "checkpoint_saved", "step": 1000, "path": "workspace/models/checkpoints/stage2-20260115/step_1000", "is_best": true}

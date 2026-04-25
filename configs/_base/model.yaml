@@ -1,0 +1,39 @@
+# configs/_base/model.yaml
+# Default model architecture config inherited by all stage configs.
+# Override only the keys that differ in each stage's defaults: list.
+
+encoder:
+  model_id: openai/whisper-large-v3
+  local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/models/base/whisper-large-v3
+  freeze: false
+  dora:
+    enabled: true
+    r: 32
+    alpha: 64
+    target_modules: [q_proj, k_proj, v_proj, out_proj]
+    dropout: 0.05
+
+adapter:
+  type: mlp_qformer
+  input_dim: 1280                 # Whisper-large-v3 encoder output dim
+  # output_dim resolved at runtime from decoder.hidden_size
+  mlp_hidden_dim: 2048
+  num_query_tokens: 64
+  source_tokens_per_sec: 50       # Whisper frame rate post-encoder
+  target_tokens_per_sec: 5        # compressed rate fed to LLM (50→5 = 10× reduction)
+  dropout: 0.1
+
+decoder:
+  model_id: google/gemma-2-9b-it
+  local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/models/base/gemma-2-9b-it
+  hidden_size: 3584               # Gemma-2-9B-it hidden dim
+  freeze_base: false
+  lora:
+    enabled: true
+    r: 64
+    alpha: 128
+    target_modules: [q_proj, k_proj, v_proj, o_proj]
+    dropout: 0.05
+    bias: none
+  attn_implementation: flash_attention_2
+  torch_dtype: bfloat16

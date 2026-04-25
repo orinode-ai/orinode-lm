@@ -1,0 +1,26 @@
+# configs/data/common_voice_nigerian.yaml
+# Mozilla Common Voice — Nigerian language subsets.
+# Covers Hausa and Yoruba.  Igbo coverage is sparse (~2 h validated).
+# License: CC0.  HuggingFace: mozilla-foundation/common_voice_17_0
+#
+# NOTE: Requires acceptance of the Common Voice terms on HuggingFace.
+# Set HUGGINGFACE_HUB_TOKEN or run `huggingface-cli login` before downloading.
+
+corpus_id: common_voice_nigerian
+display_name: Common Voice (Nigerian subset)
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/raw/common_voice
+processed_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/processed/common_voice
+languages: [ha, yo, ig]
+license: CC0
+approx_hours: 120              # validated hours across ha+yo+ig
+sample_rate: 48000             # original; resampled to 16 kHz
+audio_format: mp3
+
+download:
+  method: huggingface
+  hf_dataset_id: mozilla-foundation/common_voice_17_0
+  requires_auth: true          # HuggingFace token required
+  language_codes:
+    ha: ha
+    yo: yo
+    ig: ig

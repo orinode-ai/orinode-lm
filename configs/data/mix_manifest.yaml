@@ -1,0 +1,28 @@
+# configs/data/mix_manifest.yaml
+# Temperature-weighted multilingual sampling configuration for the mixed
+# training manifest used in stages 2–4.
+#
+# sampling_temperature (α):
+#   α = 0.3  — default; matches MERaLiON recommendation for 5-language mix.
+#              IG (~80 h) and PCM (~200 h) are upsampled roughly 4–6× relative
+#              to their raw proportions; EN (~1700 h) is downsampled ~3×.
+#   Tune α in configs/training/stageN.yaml; leave this file as the reference.
+
+sampling_temperature: 0.3
+
+# Approximate validated training hours per language (update as data grows).
+corpus_hours:
+  en: 1700
+  ha: 600
+  yo: 400
+  ig: 80
+  pcm: 200
+
+# Expected sampling probabilities at α=0.3 (pre-computed for documentation).
+# Recomputed at runtime by compute_sampling_weights().
+expected_probs_alpha03:
+  en: 0.27
+  ha: 0.22
+  yo: 0.19
+  ig: 0.13
+  pcm: 0.19

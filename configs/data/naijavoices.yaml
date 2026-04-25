@@ -1,0 +1,20 @@
+# configs/data/naijavoices.yaml
+# NaijaVoices corpus configuration.
+# ~2 TB decompressed. Contains Nigerian English, Hausa, Yoruba, Igbo.
+# License: CC BY 4.0.  Source: https://naijavoices.org
+#
+# local_dir is under workspace/data/raw/ (gitignored, never committed).
+
+corpus_id: naijavoices
+display_name: NaijaVoices
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/raw/naijavoices
+processed_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/data/processed/naijavoices
+languages: [en, ha, yo, ig]
+license: CC BY 4.0
+approx_hours: 1500
+sample_rate: 16000
+audio_format: wav               # raw; converted to flac at preprocessing
+
+download:
+  method: direct                # see scripts/data/download_naijavoices.py
+  requires_auth: false

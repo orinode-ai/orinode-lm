@@ -1,0 +1,22 @@
+# configs/eval/asr_code_switched.yaml
+# Code-switching ASR evaluation.
+# Reports standard WER, CS-WER (token + language tag), and per-language WER
+# broken out by span language.
+
+defaults:
+  - _base/data
+  - _self_
+
+eval_name: asr_code_switched
+metrics: [wer_tone_sensitive, cs_wer, tag_accuracy, per_language_wer]
+batch_size: 8
+lid_model_id: facebook/mms-300m # used for per-word language tagging
+
+data:
+  test_manifest: null            # set to path of code-switched test split
+  augmentation:
+    enabled: false
+
+report:
+  output_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/evals
+  formats: [markdown, json]

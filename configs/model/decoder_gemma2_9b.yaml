@@ -1,0 +1,23 @@
+# configs/model/decoder_gemma2_9b.yaml
+# Gemma-2-9B-Instruct decoder with LoRA adapters.
+# Default decoder for Orinode-LM.
+
+model_id: google/gemma-2-9b-it
+local_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/models/base/gemma-2-9b-it
+hidden_size: 3584
+num_attention_heads: 16
+num_hidden_layers: 42
+vocab_size: 256000               # will grow by ~80 tokens after extend_tokenizer()
+
+lora:
+  enabled: true
+  r: 64
+  alpha: 128
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+  dropout: 0.05
+  bias: none
+  task_type: CAUSAL_LM
+
+attn_implementation: flash_attention_2
+torch_dtype: bfloat16
+use_cache: false                 # disabled during training for gradient checkpointing

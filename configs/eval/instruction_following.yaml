@@ -1,0 +1,27 @@
+# configs/eval/instruction_following.yaml
+# Instruction-following evaluation using LLM-judge (Claude API).
+# Gated by ANTHROPIC_API_KEY environment variable; skipped gracefully if absent.
+
+defaults:
+  - _base/data
+  - _self_
+
+eval_name: instruction_following
+tasks: [transcribe, translate_to_english, summarise_call, qa_from_audio]
+languages: [en, ha, yo, ig, pcm]
+batch_size: 4
+
+llm_judge:
+  enabled: true                 # set false to skip LLM-judge; use rule-based only
+  model: claude-sonnet-4-6      # requires ANTHROPIC_API_KEY
+  temperature: 0.0
+  rubric: configs/eval/judge_rubric.txt   # optional; uses default if absent
+
+data:
+  test_manifest: null
+  augmentation:
+    enabled: false
+
+report:
+  output_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/evals
+  formats: [markdown, json]

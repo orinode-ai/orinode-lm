@@ -1,0 +1,22 @@
+# configs/eval/asr_monolingual.yaml
+# Per-language monolingual ASR evaluation configuration.
+# Inherits data preprocessing from _base/data to avoid train/eval skew.
+
+defaults:
+  - _base/data
+  - _self_
+
+eval_name: asr_monolingual
+languages: [en, ha, yo, ig, pcm]
+metrics: [wer_tone_sensitive, wer_tone_stripped, cer]
+batch_size: 16
+
+data:
+  # Override per-split; leave null to use workspace/data/manifests/test.jsonl
+  test_manifest: null
+  augmentation:
+    enabled: false              # no augmentation during evaluation
+
+report:
+  output_dir: ${oc.env:ORINODE_WORKSPACE,workspace}/evals
+  formats: [markdown, json]
