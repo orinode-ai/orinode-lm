@@ -32,9 +32,9 @@ augmentation:
 
 model:
   encoder:
-    attn_implementation: flash_attention_2
+    attn_implementation: sdpa
   decoder:
-    attn_implementation: flash_attention_2
+    attn_implementation: sdpa
     freeze_base: true
     lora:
       enabled: false
@@ -48,8 +48,8 @@ training:
   gradient_checkpointing: true
   bf16: true
   grad_clip: 1.0
-  eval_interval: 1000
-  checkpoint_interval: 1000
+  eval_interval: 500
+  checkpoint_interval: 500
   logging_interval: 10
   early_stopping_patience: 10
   early_stopping_metric: dev_wer
@@ -57,7 +57,7 @@ training:
 
 optimizer:
   type: adamw
-  lr: 1.0e-4
+  lr: 2.0e-5
   weight_decay: 0.01
   betas: [0.9, 0.999]
   fused: true

@@ -213,7 +213,7 @@ class BaseTrainer:
                 save_dir=ckpt_dir,
                 metric="val_wer",
                 mode="min",
-                max_keep=2,
+                max_keep=4,
                 save_fn=lambda p: self._save_checkpoint(model, p),
             )
         )
@@ -339,7 +339,7 @@ class BaseTrainer:
                 save_dir=ckpt_dir,
                 metric="val_wer",
                 mode="min",
-                max_keep=2,
+                max_keep=4,
                 save_fn=lambda p: self._save_checkpoint(model, p),
             )
         )

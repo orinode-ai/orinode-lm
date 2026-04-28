@@ -159,9 +159,15 @@ class EventEmitterCallback:
         self._emit_every: int = 1
 
     def on_train_start(self, state: TrainingState) -> None:
-        # Bug 2: compute adaptive step frequency before first step
-        total = state.total_steps
-        self._emit_every = max(1, total // 100) if total >= 10 else 1
+        # Honor logging_interval from config; fall back to adaptive total//100
+        log_interval = None
+        if self._cfg is not None:
+            log_interval = self._cfg.training.get("logging_interval", None)
+        if log_interval is not None:
+            self._emit_every = max(1, int(log_interval))
+        else:
+            total = state.total_steps
+            self._emit_every = max(1, total // 100) if total >= 10 else 1
 
         # Bug 1: populate stage / run_name / config_yaml from cfg
         stage = 0

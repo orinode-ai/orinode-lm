@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import signal
 from pathlib import Path
 
 import torch
@@ -238,13 +239,30 @@ class Stage1Trainer(BaseTrainer):
                 input_features, labels_batch = self._unpack_batch(batch, model)
 
                 with torch.no_grad():
-                    pred_ids = model.generate(
-                        input_features,
-                        language="en",
-                        task="transcribe",
-                        forced_decoder_ids=None,  # avoid conflict with processor presets
-                        num_beams=1,              # greedy for speed
-                    )
+                    # Do not pass forced_decoder_ids=None — in transformers 4.46+
+                    # that overrides the language/task tokens, causing unconstrained
+                    # generation and hallucination loops. max_new_tokens=448 covers
+                    # the full 30s Whisper token budget.
+                    def _handle_gen_timeout(signum, frame):
+                        raise TimeoutError("generation timeout")
+                    signal.signal(signal.SIGALRM, _handle_gen_timeout)
+                    signal.alarm(60)
+                    try:
+                        pred_ids = model.generate(
+                            input_features,
+                            language="en",
+                            task="transcribe",
+                            num_beams=1,
+                            max_new_tokens=444,
+                            no_repeat_ngram_size=3,
+                            repetition_penalty=1.2,
+                        )
+                    except TimeoutError:
+                        log.warning(f"Generation timeout on eval batch {i} — skipping")
+                        signal.alarm(0)
+                        continue
+                    finally:
+                        signal.alarm(0)
 
                 hyps = tok.batch_decode(pred_ids, skip_special_tokens=True)
                 refs = []
@@ -256,9 +274,36 @@ class Stage1Trainer(BaseTrainer):
                 references.extend(refs)
 
             if references:
-                wer_value = compute_wer(references, hypotheses)
-                metrics["wer"] = wer_value
-                log.info(f"Dev WER: {wer_value:.4f} ({len(references)} utterances)")
+                # Normalize before WER: lowercase + strip punctuation + collapse
+                # whitespace. AfriSpeech refs contain mixed-case, medical
+                # abbreviations, and OCR typos — raw WER overstates the error rate.
+                try:
+                    from transformers.models.whisper.english_normalizer import (
+                        BasicTextNormalizer,
+                    )
+                    _normalizer = BasicTextNormalizer()
+                except ImportError:
+                    import re as _re
+                    def _normalizer(s: str) -> str:  # type: ignore[misc]
+                        s = s.lower()
+                        s = _re.sub(r"[^\w\s]", " ", s)
+                        return _re.sub(r"\s+", " ", s).strip()
+
+                refs_norm = [_normalizer(r) for r in references]
+                hyps_norm = [_normalizer(h) for h in hypotheses]
+                valid_pairs = [
+                    (r, h) for r, h in zip(refs_norm, hyps_norm) if r.strip()
+                ]
+                if valid_pairs:
+                    refs_clean = [r for r, _ in valid_pairs]
+                    hyps_clean = [h for _, h in valid_pairs]
+                    wer_value = compute_wer(refs_clean, hyps_clean)
+                    metrics["wer"] = wer_value
+                    skipped = len(references) - len(valid_pairs)
+                    log.info(
+                        f"Dev WER: {wer_value:.4f} ({len(refs_clean)} utterances, "
+                        f"normalized; {skipped} empty-ref skipped)"
+                    )
         except Exception as exc:
             log.warning(f"WER computation failed: {exc}")
 
